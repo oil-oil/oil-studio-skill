@@ -8,13 +8,14 @@ Return to [SKILL.md](../SKILL.en.md). Match what the speaker intended to say: co
    - `diagnostics.repeatedWords`: collapse accidental stutters (`然后然后`, `比较比较`, `the the`) to a single word.
    - `diagnostics.glossaryMatches` and `diagnostics.lowConfidenceWords`: inspect in context for homophone or ASR errors.
    - `diagnostics.layoutWarnings`: fix `over_width` (> 20 visual characters) or `orphan_second_line` (< 4 visual characters on line 2). **Keep any cue with total visual width ≤ 20 on a single line (never insert `\n` into a short cue)**; only use `\n` at a natural clause boundary when total width exceeds 20 visual characters.
+   - `diagnostics.overlappingCues` and `cues[].fromSystemAudio`: when an inner video or TTS plays while the presenter is speaking, system-audio cues (`fromSystemAudio: true`) can overlap microphone cues (`fromSystemAudio: false`) on the output timeline. Remove overlapping inner-video bleed cues directly in `edits` with `{"id": "...", "expectedText": "...", "delete": true}` while keeping the presenter's speech (retain `fromSystemAudio: true` cues only when genuine remote dialogue such as a meeting call is intended).
 2. Flag awkward or sound-alike errors, inconsistent spellings, names, code, commands, versions, filenames, and paths across the full transcript.
 3. Seek evidence, strongest first:
    - `subtitles get` → `script`: the teleprompter script often spells names correctly, but speakers depart from it. Use it for vocabulary, never to replace speech with the script.
    - The same term correctly recognized elsewhere in the recording.
    - On-screen text: `oilstudio frame <project> --source-ms <cue-start-ms> --out <png> --text`.
    - Reliable topic knowledge, such as common programming product names.
-4. Change only supported recognition errors and clear fillers/stutters. Retain uncertain text and mention it in the report. Evidence does not enter the edits file; each edit contains only `id`, `expectedText`, and `text`.
+4. Change only supported recognition errors and clear fillers/stutters. Retain uncertain text and mention it in the report. Evidence does not enter the edits file; each edit contains only `id`, `expectedText`, and either `text` or `"delete": true`.
 
 ### Example: `subtitles get` diagnostics → `subtitles apply` edits
 

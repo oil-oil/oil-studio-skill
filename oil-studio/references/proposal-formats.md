@@ -61,6 +61,8 @@
 
 `range` 和 `sourceMs` 每条只写一个。不要写成片时间。时间直接用 context 里的整数毫秒，不用自己补小数；剪到某个片段或整段录制的末尾时，照抄它的结束时间即可。
 
+非 `silence` 类别的普通语义删减若超过 30 秒（30000 ms），校验器会将其标为 `uncheckedByDefault`（默认不勾选）；高置信度（`confidence: "high"`）且提供合法 `keptRange` 的 `abandoned_take` 整段重说上限放宽至 3 分钟（180000 ms）。任何与画面操作重叠却未写 `"screenAction": "redundant"` 及 `"visualAssessment"` 的语义删减仍会标为 `uncheckedByDefault`。对于超长废片（含多段 `pauses` 草案中的 `silence`），保留其中的 `silence` 条目，并将有语音的 `abandoned_take` 标清 `keptRange`、`screenAction: "redundant"` 和 `visualAssessment`，使确认无误的删减默认勾选生效。
+
 精剪先用 `pauses <工程> --out-plan <json>` 取得停顿清理草案，将语义删减追加到同一份 `decisions`。草案的指纹必须与 context 一致；不提前提交清理。`plan preview <方案文件> --index <从 0 开始的条目编号> --out <wav>` 可试听合并全部可执行删减后的接缝，只读取原始麦克风声音，不修改工程。变速、重复或重排时间线不支持。
 
 ## 口头禅覆盖检查
@@ -213,6 +215,11 @@ python3 -B <Skill目录>/scripts/check_filler_coverage.py --context <当前conte
       "id": "c0042",
       "expectedText": "我平时用 cloud code 写代码",
       "text": "我平时用 Claude Code 写代码"
+    },
+    {
+      "id": "c0043",
+      "expectedText": "被录进去的内部视频背景串音",
+      "delete": true
     }
   ],
   "glossary": [
@@ -222,7 +229,7 @@ python3 -B <Skill目录>/scripts/check_filler_coverage.py --context <当前conte
 ```
 
 - `id` 与 `expectedText` 分别从 `subtitles get` 结果的 `id`、`text` 原样复制（不是 `displayText`，那是去掉标点后用于显示的文字）；`expectedText` 与当前字幕不一致的条目会被拒绝。
-- 只改文字，不改时间。
+- 修改文字填非空 `text`；删除冗余或双轨重叠的系统串音字幕填 `"delete": true`（此时不填 `text`）。只改或删字幕条目，不改时间。
 - `glossary` 可以省略；只放会反复出现的错误。
 
 ## 脚本字幕整轨（`subtitles apply`）

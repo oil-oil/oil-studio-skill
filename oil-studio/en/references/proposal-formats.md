@@ -61,6 +61,8 @@ Return to [SKILL.md](../SKILL.en.md). Validate cut, zoom, layout, overlay, and r
 
 Each decision uses either `range` or `sourceMs`, never both. Never use output time for cuts. Copy integer source milliseconds from context; at the end of a clip/session, copy its end time without adding fractions.
 
+Non-`silence` semantic cuts longer than 30 seconds (30000 ms) become `uncheckedByDefault`, except high-confidence (`confidence: "high"`) `abandoned_take` retakes with a valid `keptRange`, which stay checked by default up to 3 minutes (180000 ms). Any semantic cut overlapping screen operations without `"screenAction": "redundant"` and a nonempty `"visualAssessment"` also becomes `uncheckedByDefault`.
+
 Start fine-cut plans with `pauses <project> --out-plan <json>` and append semantic decisions. Context and draft fingerprints must match. Do not apply cleanup separately first. `plan preview <plan> --index <zero-based-index> --out <wav>` previews joins with all applicable cuts, reading only original microphone audio and changing nothing. Speed changes, repeats, and reordered timelines are unsupported.
 
 ## Filler coverage check
@@ -208,7 +210,8 @@ Receipt indexes follow the items in the same plan: `decisions`, `zooms`, `layout
 {
   "schemaVersion": 1,
   "edits": [
-    {"id": "c0042", "expectedText": "I use cloud code to write code.", "text": "I use Claude Code to write code."}
+    {"id": "c0042", "expectedText": "I use cloud code to write code.", "text": "I use Claude Code to write code."},
+    {"id": "c0043", "expectedText": "Overlapping inner-video bleed.", "delete": true}
   ],
   "glossary": [
     {"wrong": "cloud code", "correct": "Claude Code"}
@@ -216,7 +219,7 @@ Receipt indexes follow the items in the same plan: `decisions`, `zooms`, `layout
 }
 ```
 
-Copy `id` and `expectedText` exactly from `subtitles get` → `id`/`text`, never `displayText`. Stale text is rejected. Edit text only, not timing. The optional glossary should contain recurring recognition errors.
+Copy `id` and `expectedText` exactly from `subtitles get` → `id`/`text`, never `displayText`. Stale text is rejected. Supply nonempty `text` to replace wording, or `"delete": true` (omitting `text`) to remove an unwanted or overlapping system-audio bleed cue; never modify timing in `edits`. The optional glossary should contain recurring recognition errors.
 
 ## Whole-track captions (`subtitles apply`)
 

@@ -10,8 +10,8 @@ description: >
   recording. Not for editing ordinary MP4/MOV files or directly changing files inside a project package.
   用 Oil Studio 录制和处理本机的录屏工程：录一段窗口或屏幕的操作演示、精剪口播、收紧停顿、删除操作空档、调整画面缩放、添加标题/图片、遮盖敏感区域、校对或翻译字幕、划分章节、合成 AI 配音并导出成片。
 metadata:
-  version: 0.9.14
-  minAppVersion: 0.3.26
+  version: 0.9.15
+  minAppVersion: 0.3.35
 ---
 
 # Oil Studio
@@ -24,7 +24,7 @@ Task navigation: [Fine cut](#fine-cut) · [Overlays and redactions](#add-overlay
 
 ## Before starting
 
-1. Run `OILSTUDIO_SKILL_VERSION=0.9.14 oilstudio status`, using this file's frontmatter `metadata.version`.
+1. Run `OILSTUDIO_SKILL_VERSION=0.9.15 oilstudio status`, using this file's frontmatter `metadata.version`.
    - If the command is missing, tell the user to open Oil Studio and choose Install in Settings › AI Agent, then stop.
    - If `skill.compatible` is present and false, report `skill.action.message` and `skill.action.hint` and stop. If true, continue. If null, check the supplied version and stop.
    - If `skill.compatible` is absent, the app is older. Compare `app.version` with this file's `minAppVersion` numerically, component by component; ask the user to update Oil Studio and stop if it is too old. If the version is unavailable, explain that compatibility could not be checked; do not substitute `cli.version`.
@@ -44,7 +44,7 @@ Task navigation: [Fine cut](#fine-cut) · [Overlays and redactions](#add-overlay
 | Record an app or website demonstration | Record a demonstration |
 | Choreograph web actions, beat captions, HUD cards, and zooms | Record from a web playbook |
 | Remove waits with no voice-over | Remove idle time |
-| Remove retakes/slips and clean up captions together | Fine cut + Proofread captions (complete both in one pass) |
+| Remove retakes/slips and clean up captions together | Fine cut + captions in one pass (standard command flow) |
 | Remove retakes, slips, and abandoned speech | Fine cut |
 | Remove only pauses and silence | Tighten pauses |
 | Make the subject easier to see | Adjust zooms |
@@ -130,10 +130,10 @@ oilstudio plan submit "$WORK/02-plan.json"
 oilstudio subtitles get "<project>" --plan "$WORK/02-plan.json" --out "$WORK/04-subtitles.json"
 
 # 5. Clear diagnostics (typos, inconsistent casing, residual fillers/stutters, layout warnings) and submit directly (without --review)
-oilstudio subtitles apply "<project>" "$WORK/05-subtitle-edits.json"
+oilstudio subtitles apply "<project>" "$WORK/05-subtitle-edits.json" --plan "$WORK/02-plan.json"
 ```
 
-For chapters, prepare from post-cut captions with `--plan` after step 1, but submit against the current project only after the cut plan is actually applied. This avoids invalidating chapters with a pre-cut fingerprint.
+For chapters on videos longer than 3 minutes (180000 ms) without existing chapters, reference retained `fromCue` IDs and run `oilstudio chapters apply "<project>" "$WORK/06-chapters.json" --plan "$WORK/02-plan.json"`; it queues behind the cut and caption proposals and applies automatically once the cut plan is confirmed.
 
 ## Fine cut
 
@@ -203,7 +203,7 @@ Read [Project settings and export](references/video-settings-and-export.md). Dis
 ## Proofread captions
 
 1. Run `oilstudio subtitles get <project> --out <temporary-file>` (when fine-cutting in the same pass, pass `--plan <plan.json>` so `outputStartMs`, `displayText`, and `diagnostics` are projected onto the post-cut timeline). If no captions exist, follow “Generate captions,” then read them again to a new temporary filename.
-2. Read [Caption proofreading](references/subtitle-proofreading.md). Inspect `diagnostics` (`inconsistentTerms`, `residualFillers`, `repeatedWords`, `glossaryMatches`, `lowConfidenceWords`, `layoutWarnings`) alongside `glossary.replacements` and `glossary.hotwords`. Correct recognition errors, unify inconsistent term casing, clean residual written fillers/stutters on retained cues, and fix layout warnings.
+2. Read [Caption proofreading](references/subtitle-proofreading.md). Inspect `diagnostics` (`inconsistentTerms`, `residualFillers`, `repeatedWords`, `glossaryMatches`, `lowConfidenceWords`, `layoutWarnings`, `overlappingCues`) alongside `glossary.replacements` and `glossary.hotwords`. Correct recognition errors, unify inconsistent term casing, clean residual written fillers/stutters on retained cues, remove overlapping system-audio bleed cues when needed, and fix layout warnings.
 3. Write edits following Proposal formats. Copy `expectedText` exactly from returned `text`, never `displayText`.
 4. Run `oilstudio subtitles apply <project> <edits>`. Edits apply directly by default (do not pass `--review` unless the user explicitly asks to review caption wording item by item; the generic toolbar brief about confirming proposals in the app applies to `plan submit`, not caption typo fixes). When a cut review is open in the app, `subtitles apply` without `--review` queues with `pendingReason: review_in_progress` and auto-applies once the user confirms the cut plan.
 5. Inspect the receipt. For `autoApplied: true`, check `applied` and `skipped`; for false, wait for `proposal status`. `pendingReason: review_in_progress` means queued behind another review. On dismissal, inspect `reason`; rebuild from current captions only for a project change or validation failure, never automatically for `USER_DISMISSED`. After application, get captions again under a new filename, verify accepted edits, cleared `diagnostics`, and unchanged timings.
@@ -216,7 +216,7 @@ Read [Project settings and export](references/video-settings-and-export.md). Dis
 3. Read the Chapters section in [Chapters and translation](references/chapters-and-translation.md) and choose boundaries and titles. Position does not belong in this file; when the user requests top or bottom, use `settings apply` separately for `subtitles.chapterProgressPosition`.
 4. Write the chapter file and run `oilstudio chapters apply <project> <chapters>`. Chapters apply immediately and enable the progress bar without user confirmation or a chapter-review wait.
 5. After `autoApplied: true`, read back with `chapters get`, report the actual count, and explain undo and manual editing/deletion in the app. For false, follow `pendingReason` for project readiness or queued work.
-6. When a cut plan is part of the same pass, wait until it is actually applied before submitting chapters against the current project. Do not queue chapters with a stale pre-cut fingerprint.
+6. When a cut plan is part of the same pass, reference post-cut retained `fromCue` IDs or kept source times and run `oilstudio chapters apply <project> <chapters> --plan <plan>`, so it validates against the post-cut timeline, queues behind the cut and caption proposals, and applies automatically once confirmed.
 
 ## English subtitles
 

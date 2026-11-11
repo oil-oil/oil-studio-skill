@@ -13,7 +13,8 @@
    - `diagnostics.residualFillers`：因与前后词连读或画面有操作而保留在成片里的无词义犹豫音（如句首或孤立的“呃、嗯、唉、诶、额、啊”），从字幕文字中删掉（注意区分“额度、额外、金额”等实词，分词器只标记孤立的单字语气词）；
    - `diagnostics.repeatedWords`：因连读未在音轨切掉的口吃重复（如“然后然后”“比较比较”“我我”），在字幕文字里保留一遍即可；
    - `diagnostics.glossaryMatches` 与 `diagnostics.lowConfidenceWords`：结合上下文重点核对是否有同音误识；
-   - `diagnostics.layoutWarnings`：检查是否有单行超过 20 字宽（`over_width`）或双行中第二行不足 4 字宽的孤字行（`orphan_second_line`）。**总宽 ≤ 20 字宽的句子一律保持单行（绝不插入 `\n`）**；只有总宽 > 20 字宽必须折成两行时，才用 `\n` 在自然语义边界处调整为均衡双行。
+   - `diagnostics.layoutWarnings`：检查是否有单行超过 20 字宽（`over_width`）或双行中第二行不足 4 字宽的孤字行（`orphan_second_line`）。**总宽 ≤ 20 字宽的句子一律保持单行（绝不插入 `\n`）**；只有总宽 > 20 字宽必须折成两行时，才用 `\n` 在自然语义边界处调整为均衡双行；
+   - `diagnostics.overlappingCues` 与 `cues[].fromSystemAudio`：当讲解者边说话边播放含人声/TTS 的内部视频时，系统轨字幕（`fromSystemAudio: true`）会与麦克风口播字幕（`fromSystemAudio: false`）在成片时间重叠。用 `edits` 中的 `{"id": "...", "expectedText": "...", "delete": true}` 直接删除串入的系统轨重叠字幕，保留讲解者字幕（只有会议对谈等确实需要双人字幕的场景才保留系统轨独立发言）。
 2. 除 `diagnostics` 提示外，逐句通读找出可疑句子：
    - 读不通、像同音字错误的句子（如“打标”误写成“达标”、“试错”误写成“失措”）；
    - 英文名、产品名、代码、命令、版本号、文件名、路径；
@@ -24,7 +25,7 @@
    - 当时屏幕上的文字：运行 `oilstudio frame <工程> --source-ms <这句的开始毫秒> --out <png> --text`，看 `text` 里有没有对应的词；
    - 主题常识（例如讲编程工具时的常见产品名）。
 4. 已有错词规则也要与当前语境核对，避免将普通词误改成产品名。改完按同一个词的其他变体再扫一次全片。
-5. 有证据才改同音词和专有名词；没有证据保留原文，在最终汇报里列为"拿不准"。证据只用来帮你做判断，不写进修改文件：每条修改只有 `id`、`expectedText`、`text`。
+5. 有证据才改同音词和专有名词；没有证据保留原文，在最终汇报里列为"拿不准"。证据只用来帮你做判断，不写进修改文件：每条修改只有 `id`、`expectedText` 以及 `text`（或 `"delete": true`）。
 
 ## `subtitles get` 诊断与 `subtitles apply` 映射示例
 

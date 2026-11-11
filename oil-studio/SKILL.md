@@ -7,8 +7,8 @@ description: >
   用 Oil Studio 处理本机录屏工程：录制演示、精剪口播、添加标题或图片、遮盖画面、处理字幕与章节、合成配音和导出。用户提到 Oil Studio 或录屏工程时使用。
   不用于普通 MP4/MOV 视频剪辑、加字幕，或直接编辑工程文件。
 metadata:
-  version: 0.9.14
-  minAppVersion: 0.3.26
+  version: 0.9.15
+  minAppVersion: 0.3.35
 ---
 
 # Oil Studio
@@ -21,7 +21,7 @@ For an English conversation, read [the English workflow](en/SKILL.en.md) and fol
 
 ## 开始前
 
-1. 用本文件 frontmatter 的 `metadata.version` 运行 `OILSTUDIO_SKILL_VERSION=0.9.14 oilstudio status`。
+1. 用本文件 frontmatter 的 `metadata.version` 运行 `OILSTUDIO_SKILL_VERSION=0.9.15 oilstudio status`。
    - 命令不存在：告诉用户打开 Oil Studio，在「设置 › AI Agent」里点「安装」，然后停止。
    - 有 `skill.compatible` 时，若为 false，向用户转达 `skill.action.message` 和 `skill.action.hint` 并停止；为 true 时继续。若为 null，说明版本未被正确提供，重新核对后停止。
    - 没有 `skill.compatible` 表示 App 版本较旧：按语义版本各段数字比较 `app.version` 与本文件的 `minAppVersion`，版本过低请用户升级 Oil Studio 并停止；版本无法取得时说明无法核对，不用 `cli.version` 代替。
@@ -129,10 +129,10 @@ oilstudio plan submit "$WORK/02-plan.json"
 oilstudio subtitles get "<工程>" --plan "$WORK/02-plan.json" --out "$WORK/04-subtitles.json"
 
 # 5. 清零 diagnostics 中的错词、大小写不一、残留语气词/口吃与断行告警，直接提交字幕修改（不加 --review）
-oilstudio subtitles apply "<工程>" "$WORK/05-subtitle-edits.json"
+oilstudio subtitles apply "<工程>" "$WORK/05-subtitle-edits.json" --plan "$WORK/02-plan.json"
 ```
 
-需要章节时，可在第 1 步后用 `--plan` 读取剪后字幕并准备章节；等剪辑实际应用后，再按「划分章节」对当前工程提交，避免剪辑前的指纹失效。
+需要章节时，成片时长 > 3 分钟（180000 ms）且尚无章节的工程，可直接用剪后保留的中文 `fromCue` 编写章节并运行 `oilstudio chapters apply "<工程>" "$WORK/06-chapters.json" --plan "$WORK/02-plan.json"`；它会排在剪辑与字幕提案之后，在用户点一次确认后自动接续生效。
 
 ## 精剪
 
@@ -204,7 +204,7 @@ oilstudio subtitles apply "<工程>" "$WORK/05-subtitle-edits.json"
 
 1. 运行 `oilstudio subtitles get <工程> --out <临时文件>`（若同轮刚提交了精剪方案 `<方案文件>`，加上 `--plan <方案文件>` 按剪后时间线投影 `outputStartMs`、`displayText` 和 `diagnostics`）。
    - 报"没有字幕"：按「生成字幕」执行，成功后用新临时文件名重新读取。
-   - 同时读取返回的 `glossary.replacements`、`glossary.hotwords` 以及 `diagnostics`（`inconsistentTerms`、`residualFillers`、`repeatedWords`、`glossaryMatches`、`lowConfidenceWords`、`layoutWarnings`），逐项核对错词、全片大小写一致性、残留书面语气词/口吃重复和超宽/孤字断行；词表不是无条件替换指令，也不读取其他工具的私有配置。
+   - 同时读取返回的 `glossary.replacements`、`glossary.hotwords` 以及 `diagnostics`（`inconsistentTerms`、`residualFillers`、`repeatedWords`、`glossaryMatches`、`lowConfidenceWords`、`layoutWarnings`、`overlappingCues`），逐项核对错词、全片大小写一致性、残留书面语气词/口吃重复、超宽/孤字断行与双轨重叠串音；词表不是无条件替换指令，也不读取其他工具的私有配置。
 2. 读 [字幕校对](references/subtitle-proofreading.md)，逐句检查：修正有证据的同音错字和专有名词、统一同一术语的大小写、清理因连读或画面操作保留在成片里的书面语气词（如句首或孤立的“呃、嗯、额、啊”）与口吃重复词（如“然后然后”“比较比较”），并处理 `layoutWarnings` 提示的超宽或孤字行。
 3. 按 [提案格式](references/proposal-formats.md) 写字幕修改文件，每条的 `expectedText` 从 `subtitles get` 结果的 `text` 原样复制（不是 `displayText`）。
 4. 运行 `oilstudio subtitles apply <工程> <修改文件>`，提交时自动核对旧文字。中文字幕校对默认直接调用（不加 `--review`）：即使剪辑提示词里有通用的“修改以方案提交，由我在 App 里确认”，那也是指 `plan submit` 的剪辑方案；除非用户明确要求逐条审核字幕文字修改，否则不要给 `subtitles apply` 加 `--review`。当 App 正在等待用户确认剪辑方案时，不带 `--review` 的 `subtitles apply` 会自动排队（`pendingReason: review_in_progress`），用户点一次确认就会同时生效。
@@ -219,7 +219,7 @@ oilstudio subtitles apply "<工程>" "$WORK/05-subtitle-edits.json"
 3. 读 [章节与翻译](references/chapters-and-translation.md) 的"章节"一节，决定章节边界和标题。位置不在章节文件里设置；用户要求顶部或底部时，另用 `settings apply` 修改 `subtitles.chapterProgressPosition`。
 4. 按格式写章节文件，运行 `oilstudio chapters apply <工程> <章节文件>`。章节直接生效并自动开启进度条，不需要用户确认，也不要额外等待章节审阅。
 5. `autoApplied: true` 后再次 `chapters get` 回读，汇报实际章节数，并说明可撤销、可在 App 中修改或删除。为 false 时按 `pendingReason` 处理工程未就绪或排队状态。
-6. 同一轮还有剪辑方案时，等剪辑实际应用后再按当前工程提交章节；不要用剪辑前的旧指纹让章节排队失效。
+6. 同一轮还有剪辑方案时，引用剪后仍保留的 `fromCue` 或源时间运行 `oilstudio chapters apply <工程> <章节文件> --plan <方案文件>`，它会自动排在剪辑与字幕提案之后接续生效。
 
 ## 英文字幕
 
