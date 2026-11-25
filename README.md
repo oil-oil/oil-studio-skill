@@ -1,14 +1,14 @@
 <p align="center">
-  <img src="./assets/readme/hero.en.png" width="100%" alt="oil-studio: ask your agent once, and it uses Oil Studio to cut retakes, pauses, and slips from a screen recording, then leaves the changes for you to apply in the app">
+  <a href="https://studio.oiloil.org/en/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill"><img src="./assets/readme/hero.en.png" width="100%" alt="oil-studio: ask your agent once, and it uses Oil Studio to cut retakes, pauses, and slips from a screen recording, then leaves the changes for you to apply in the app"></a>
 </p>
 
 <p align="center"><b>English</b> · <a href="#简体中文">简体中文</a></p>
 
 # Oil Studio Agent Skill
 
-Let Claude Code, Codex, and other agents record and edit screen recordings with [Oil Studio](https://studio.oiloil.org/en/): cut retakes, slips, and pauses, proofread captions, add chapters, synthesize AI narration, and export the finished video. The agent listens, looks, and decides; Oil Studio does the editing. Editing proposals await review, while caption corrections and chapters apply immediately and can be undone.
+Let Claude Code, Codex, and other agents record and edit screen recordings with [Oil Studio](https://studio.oiloil.org/en/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill): cut retakes, slips, and pauses, proofread captions, add chapters, synthesize AI narration, and export the finished video. The agent listens, looks, and decides; Oil Studio does the editing. Editing proposals await review, while caption corrections and chapters apply immediately and can be undone.
 
-> **中文简介：** 让 Claude Code、Codex 等 AI Agent 调用 macOS 原生录屏与剪辑工具 [Oil Studio](https://studio.oiloil.org) 自动录制应用演示、按文字稿精剪重说与口误、收紧停顿、校对并翻译字幕、生成章节与 AI 配音，并导出 60 fps 成片。详见下方[简体中文说明](#简体中文)。
+> **中文简介：** 让 Claude Code、Codex 等 AI Agent 调用 macOS 原生录屏与剪辑工具 [Oil Studio](https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill) 自动录制应用演示、按文字稿精剪重说与口误、收紧停顿、校对并翻译字幕、生成章节与 AI 配音，并导出 60 fps 成片。详见下方[简体中文说明](#简体中文)。
 
 ## Try it
 
@@ -43,11 +43,11 @@ Proofread this project’s captions, translate them into English, and export an 
 
 ## Get started
 
-**Requirements:** a Mac with Apple silicon running macOS 15 or later, and Oil Studio ([website](https://studio.oiloil.org/en/) · [download](https://download.oiloil.org/studio/OilStudio.dmg) · `brew install --cask oil-oil/tap/oil-studio`) at or above `metadata.minAppVersion` in [SKILL.en.md](oil-studio/en/SKILL.en.md).
+**Requirements:** a Mac with Apple silicon running macOS 15 or later, and Oil Studio ([website](https://studio.oiloil.org/en/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill) · [download](https://download.oiloil.org/studio/OilStudio.dmg) · `brew install --cask oil-oil/tap/oil-studio`) at or above `metadata.minAppVersion` in [SKILL.en.md](oil-studio/en/SKILL.en.md).
 
 **Recommended: install from the app.** In Oil Studio, open Settings › AI Agent and click Install. The app installs the Skill and the `oilstudio` command-line tool, and keeps both up to date with the app.
 
-**Mac App Store edition:** run `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`. It installs the command-line tool and Skill that match your Oil Studio version. Run it again after Oil Studio updates. See [studio.oiloil.org/en/agent](https://studio.oiloil.org/en/agent/).
+**Mac App Store edition:** run `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`. It installs the command-line tool and Skill that match your Oil Studio version. Run it again after Oil Studio updates. See [studio.oiloil.org/en/agent](https://studio.oiloil.org/en/agent/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill).
 
 **Or install with the Skills CLI (`skills.sh`):**
 
@@ -119,10 +119,10 @@ The Skill is open source under the [MIT License](LICENSE). The Oil Studio app is
 # 简体中文
 
 <p align="center">
-  <img src="./assets/readme/hero.png" width="100%" alt="oil-studio：对 Agent 说一句话，它用 Oil Studio 删掉录屏里的重说、停顿和口误，交给你在 App 里应用">
+  <a href="https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill"><img src="./assets/readme/hero.png" width="100%" alt="oil-studio：对 Agent 说一句话，它用 Oil Studio 删掉录屏里的重说、停顿和口误，交给你在 App 里应用"></a>
 </p>
 
-让 Claude Code、Codex 等 Agent 用 [Oil Studio](https://studio.oiloil.org) 录制和精剪录屏：删掉重说、口误和停顿，校对字幕，生成章节与 AI 配音，再导出成片。Agent 负责听、看和判断，Oil Studio 负责执行；剪辑方案由你在 App 里确认，字幕校对和章节直接生效并可撤销。
+让 Claude Code、Codex 等 Agent 用 [Oil Studio](https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill) 录制和精剪录屏：删掉重说、口误和停顿，校对字幕，生成章节与 AI 配音，再导出成片。Agent 负责听、看和判断，Oil Studio 负责执行；剪辑方案由你在 App 里确认，字幕校对和章节直接生效并可撤销。
 
 ## 试一句
 
@@ -151,11 +151,11 @@ The Skill is open source under the [MIT License](LICENSE). The Oil Studio app is
 
 ## 开始使用
 
-**需要：** macOS 15 及以上的 Apple 芯片 Mac，以及 Oil Studio（[官网](https://studio.oiloil.org) · [下载](https://download.oiloil.org/studio/OilStudio.dmg)），版本不低于 [SKILL.md](oil-studio/SKILL.md) 中的 `metadata.minAppVersion`。
+**需要：** macOS 15 及以上的 Apple 芯片 Mac，以及 Oil Studio（[官网](https://studio.oiloil.org/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill) · [下载](https://download.oiloil.org/studio/OilStudio.dmg)），版本不低于 [SKILL.md](oil-studio/SKILL.md) 中的 `metadata.minAppVersion`。
 
 **推荐：由 App 安装。** 打开 Oil Studio「设置 › AI Agent」，点“安装”。App 会安装 Skill 和命令行 `oilstudio`，并随 App 一起更新。
 
-**Mac App Store 版：** 运行 `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`，安装与 Oil Studio 同版本的命令行和 Skill；Oil Studio 更新后再运行一次。说明见 [studio.oiloil.org/agent](https://studio.oiloil.org/agent/)。
+**Mac App Store 版：** 运行 `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`，安装与 Oil Studio 同版本的命令行和 Skill；Oil Studio 更新后再运行一次。说明见 [studio.oiloil.org/agent](https://studio.oiloil.org/agent/?utm_source=github&utm_medium=readme&utm_campaign=oil-studio-skill)。
 
 **或者用 Skills CLI 安装：**
 
