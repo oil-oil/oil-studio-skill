@@ -11,7 +11,7 @@ description: >
   Not for quick edits of ordinary video files the user does not want in Oil Studio, or for directly changing files inside a project package.
   用 Oil Studio 录制和处理本机的录屏工程：录一段窗口或屏幕的操作演示、精剪口播、收紧停顿、删除操作空档、调整画面缩放、添加标题/图片、遮盖敏感区域、校对或翻译字幕、划分章节、合成 AI 配音并导出成片；也可以把现成视频导入成工程，切出一段并核对切点。
 metadata:
-  version: 0.14.7
+  version: 0.14.8
   minAppVersion: 0.3.44
 ---
 
@@ -25,7 +25,7 @@ Task navigation: [Fine cut](#fine-cut) · [Overlays and redactions](#add-overlay
 
 ## Before starting
 
-1. Run `OILSTUDIO_SKILL_VERSION=0.14.7 oilstudio status`, using this file's frontmatter `metadata.version`.
+1. Run `OILSTUDIO_SKILL_VERSION=0.14.8 oilstudio status`, using this file's frontmatter `metadata.version`.
    - If the command is missing, run the installer from the Oil Studio website, `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`, and first tell the user that it installs the Oil Studio command line. The Mac App Store edition installs directly; run this step again afterward. If the installer says the website edition includes the command line, ask the user to choose Install in Settings › AI Agent in Oil Studio, then stop. If it says Oil Studio isn't installed or this version isn't supported yet, report that to the user and stop.
    - If `skill.compatible` is present and false, report `skill.action.message` and `skill.action.hint` and stop. If true, continue. If null, check the supplied version and stop.
    - If `skill.compatible` is absent, the app is older. Compare `app.version` with this file's `minAppVersion` numerically, component by component; ask the user to update Oil Studio and stop if it is too old. If the version is unavailable, explain that compatibility could not be checked; do not substitute `cli.version`.
@@ -78,7 +78,7 @@ Task navigation: [Fine cut](#fine-cut) · [Overlays and redactions](#add-overlay
   - Context's `autoApply` predicts this behavior. If it is true but submission returns `autoApplied: false`, the project is closed; changes will apply when it opens. Tell the user before exporting.
 - `subtitles generate` applies directly, like chapters, without user approval; the captions can be undone in the app later. The project doesn't need to be open in the app, and the app doesn't need to be running. If the project has an AI change still waiting for the user's approval, it refuses and explains why, without recognizing speech or changing the project: ask the user to handle that change in Oil Studio first. It also refuses while Oil Studio is busy applying another change; retry once a little later. `transcribe` only prepares a transcript cache.
 - `narration generate / import` saves caption narration directly. Changes to an open project are undoable in one step; offline projects are checked for version compatibility before saving. See [Caption narration](references/narration.md).
-- `chapters apply` always applies directly, regardless of the project's automatic-edit preference or chapter review. `autoApplied: false` means the project is closed, not ready, or queued behind another review; follow `pendingReason` and never describe it as waiting for chapter approval.
+- `chapters apply` always applies directly, regardless of the automatic-edit preference or chapter review. `autoApplied: false` means the project is closed, not ready, or queued behind another review; follow `pendingReason` and never describe it as waiting for chapter approval.
 - Locate edits with utterance IDs such as `U0012` or source-time milliseconds. Never use output time for cuts or zooms. Layout proposals, export ranges, `--at-output-ms` when adding screen recordings to a voice-over, and screen clip `move` entries explicitly use output time. When a command has `--plan <plan-file>`, its output times are on the plan’s cut timeline.
 - During intermediate steps before submitting final changes or finishing export, run `oilstudio progress "<completed step>" --step <step>/<total> --project <project>`; do not call `oilstudio progress` again after the final submission or completion. `delivered: false` means the app is closed, and `PROJECT_NOT_FOUND` means the app has a different project open; continue in either case.
 - Use a new temporary filename for each `--out`; existing files are not overwritten.
@@ -243,7 +243,7 @@ If the user explicitly requires approval even for initial caption creation, expl
 
 ## Adjust project settings
 
-Aspect ratio, background, cursor, camera, watermark, caption style, and saved export options all change here. Read [Project settings and export](references/video-settings-and-export.md). Discover fields with `settings schema`, read current values and the fingerprint with `settings get <project>`, and submit only requested fields. `settings apply` follows the project’s automatic edit preference; `--review` requires review. Confirm application and read back settings before exporting.
+Aspect ratio, portrait viewport framing, background, cursor, camera, watermark, caption style, and saved export options all change here. Read [Project settings and export](references/video-settings-and-export.md). Discover fields with `settings schema`, read current values and the fingerprint with `settings get <project>`, and submit only requested fields. `settings apply` follows the global automatic edit preference; `--review` requires review. Confirm application and read back settings before exporting.
 
 ## Proofread captions
 

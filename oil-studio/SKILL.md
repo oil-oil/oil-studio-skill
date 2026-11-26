@@ -8,7 +8,7 @@ description: >
   用 Oil Studio 处理本机录屏工程：录制演示、精剪口播、添加标题或图片、遮盖画面、处理字幕与章节、合成配音和导出；也可以把现成的 MP4/MOV/M4V 导入成工程，
   从中切出一段并在完整视频里核对切点。用户提到 Oil Studio、录屏工程，或要把视频放进 Oil Studio 剪辑时使用。不用于不想进 Oil Studio 的普通视频快剪，或直接编辑工程文件。
 metadata:
-  version: 0.14.7
+  version: 0.14.8
   minAppVersion: 0.3.44
 ---
 
@@ -22,7 +22,7 @@ For an English conversation, read [the English workflow](en/SKILL.en.md) and fol
 
 ## 开始前
 
-1. 用本文件 frontmatter 的 `metadata.version` 运行 `OILSTUDIO_SKILL_VERSION=0.14.7 oilstudio status`。
+1. 用本文件 frontmatter 的 `metadata.version` 运行 `OILSTUDIO_SKILL_VERSION=0.14.8 oilstudio status`。
    - 命令不存在：运行 Oil Studio 官网的安装脚本 `curl -fsSL https://studio.oiloil.org/agent/install.sh | sh`，运行前告诉用户这是在安装 Oil Studio 命令行。Mac App Store 版会直接装好，装好后重新运行这一步；脚本提示官网版自带命令行时，请用户在 Oil Studio「设置 › AI Agent」里点「安装」，然后停止；提示没有找到 Oil Studio 或版本还不支持时，把提示转告用户并停止。
    - 有 `skill.compatible` 时，若为 false，向用户转达 `skill.action.message` 和 `skill.action.hint` 并停止；为 true 时继续。若为 null，说明版本未被正确提供，重新核对后停止。
    - 没有 `skill.compatible` 表示 App 版本较旧：按语义版本各段数字比较 `app.version` 与本文件的 `minAppVersion`，版本过低请用户升级 Oil Studio 并停止；版本无法取得时说明无法核对，不用 `cli.version` 代替。
@@ -71,11 +71,11 @@ For an English conversation, read [the English workflow](en/SKILL.en.md) and fol
 - 不直接读写工程目录里的文件，一律通过 `oilstudio`。
 - 修改只能以提案提交（`plan submit`、`subtitles apply`、`chapters apply`、`pauses --submit`、`idle --submit`、`settings apply`）。提交命令的返回里看 `autoApplied`：
   - `false`：等用户在 App 里确认。不要说"已剪好"，要说"已提交，等你在 Oil Studio 里确认"。保存 `proposalId` 和尚未完成的后续任务；一次等待超时不代表用户拒绝，也不代表整项任务完成。如果同时返回了 `skipped`、而 `applied` 为空，说明这次什么都没有应用（工程会直接应用 AI 修改，但这些条目被跳过了），按 `skipped` 里的原因处理，不要说成等待确认。
-  - `true`：修改已经生效（你自己录的工程，或用户为这个工程打开了"AI 的修改直接生效"）。汇报 `applied` 的条数和 `skipped` 的原因，告诉用户可以在 Oil Studio 里按 ⌘Z 撤销；不需要再运行 `proposal status --wait`。
+  - `true`：修改已经生效（已开启全局「AI 的修改直接生效」偏好，或此前未切换全局开关时由工程标记启用）。汇报 `applied` 的条数和 `skipped` 的原因，告诉用户可以在 Oil Studio 里按 ⌘Z 撤销；不需要再运行 `proposal status --wait`。
   - 提交前想知道是哪一种：看 context 的 `autoApply`。它为 true 而返回 `autoApplied: false`，说明工程没有在 Oil Studio 里打开，修改会在用户打开工程时自动生效；这时不要接着导出，先告诉用户。
 - `subtitles generate` 和章节一样直接生效，不需要用户确认，之后在 App 里可以撤销；工程不需要先在 App 里打开，App 没开也能用。工程里还有等待用户确认的 AI 修改时，它会拒绝并说明原因，不识别、不改工程：先请用户在 Oil Studio 里处理那条修改；Oil Studio 正在处理别的修改时也会拒绝，稍后重试一次即可。它不同于只生成转录缓存的 `transcribe`。
 - `narration generate / import` 生成或导入字幕配音后直接保存；已打开工程通过 App 一步撤销，离线工程检查版本后保存。详见 [字幕配音](references/narration.md)。
-- `chapters apply` 始终直接应用，不受工程的自动应用开关影响，也不需要章节确认。`autoApplied: false` 只表示工程未打开、尚未就绪或排在另一个审阅后；按 `pendingReason` 续接，不把它说成等待章节确认。
+- `chapters apply` 始终直接应用，不受自动应用偏好影响，也不需要章节确认。`autoApplied: false` 只表示工程未打开、尚未就绪或排在另一个审阅后；按 `pendingReason` 续接，不把它说成等待章节确认。
 - 时间只用发言编号（如 `U0012`）或源时间毫秒（`sourceStartMs` 这类字段），剪切与缩放不用成片时间；布局、导出范围、补画面的 `--at-output-ms` 与录屏片段的 `move` 明确使用成片时间。命令带 `--plan <方案文件>` 时，其中的成片时间指方案剪后的时间。
 - 在提交最终修改或完成导出之前的中间步骤，每完成一步运行一次 `oilstudio progress "<这一步做了什么>" --step <第几步>/<总步数> --project <工程>`，让用户在 App 里看到进度；最终修改已提交或整项任务完成后不要再调用 `oilstudio progress`。返回 `delivered: false` 表示 App 没开，返回 `PROJECT_NOT_FOUND` 表示 App 里打开的不是这个工程，两种情况都继续工作即可。
 - `--out` 写临时文件时每次用新文件名（例如加上步骤编号）；命令不会覆盖已有文件。
@@ -243,7 +243,7 @@ oilstudio subtitles apply "<工程>" "$WORK/05-subtitle-edits.json" --plan "$WOR
 
 ## 调整工程配置
 
-画幅、背景、光标、摄像头、水印、字幕样式和导出选项都在这里改。先读 [工程配置与导出](references/video-settings-and-export.md)，使用 `settings schema` 获取字段与范围，`settings get <工程>` 获取当前值与指纹，只提交用户要求的字段。`settings apply` 按工程的直接生效设置处理，`--review` 强制确认；等待实际应用、回读后再导出。
+画幅、竖屏视口、背景、光标、摄像头、水印、字幕样式和导出选项都在这里改。先读 [工程配置与导出](references/video-settings-and-export.md)，使用 `settings schema` 获取字段与范围，`settings get <工程>` 获取当前值与指纹，只提交用户要求的字段。`settings apply` 按全局的直接生效偏好处理，`--review` 强制确认；等待实际应用、回读后再导出。
 
 ## 校对字幕
 

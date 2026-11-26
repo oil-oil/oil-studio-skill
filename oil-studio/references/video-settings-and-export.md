@@ -26,7 +26,7 @@ oilstudio settings apply <工程> <修改.json> --review
 
 指纹可选，建议带上；工程已变化就重新读取，不用旧补丁覆盖当前修改。省略的字段保持原值。`default` 描述缺少字段时的基准，实际工程以 `get` 为准，不能拿默认值覆盖整组。
 
-- `style`：画幅 `canvasAspect: {x,y}`、留白、裁剪 `cropNormalized: {x,y,width,height}`、背景、阴影、光标、摄像头、音量与静音。坐标为归一化的 0–1；`cameraAnchor` 会同步摄像头位置，同一补丁给出 `cameraCenterNormalized` 时以明确位置为准。背景 `none/system/gradient/color/image`；`system` 表示壁纸。渐变 `backdropGradient` 为 `null` 或 `{start:{x,y},end:{x,y},stops:[{at:0,color:"#112233"},{at:1,color:"#445566"}]}`，2–16 个色标。`pointerIdleSourceMs` 是源时间毫秒，`null` 关闭闲置隐藏。
+- `style`：画幅 `canvasAspect: {x,y}`、竖屏视口构图（`screenFraming` 为 `fit`/`4:3`/`1:1`/`4:5`，宽画面在更窄画幅下可按视口卡片裁剪；`screenFramingFollow` 控制是否跟随光标；`screenFramingOffset` 为 `-1` 到 `1` 的水平偏移，`0` 居中、负值偏左、正值偏右，仅在有背景且画幅比源录屏更窄时生效）、留白、裁剪 `cropNormalized: {x,y,width,height}`、背景、阴影、光标、摄像头、音量与静音。坐标为归一化的 0–1；`cameraAnchor` 会同步摄像头位置，同一补丁给出 `cameraCenterNormalized` 时以明确位置为准。背景 `none/system/gradient/color/image`；`system` 表示壁纸。渐变 `backdropGradient` 为 `null` 或 `{start:{x,y},end:{x,y},stops:[{at:0,color:"#112233"},{at:1,color:"#445566"}]}`，2–16 个色标。`pointerIdleSourceMs` 是源时间毫秒，`null` 关闭闲置隐藏。
 - `layout`：默认布局 `type`；分段布局、缩放、删减仍按主流程提交剪辑方案。
 - `cameraAutomation`、`voice`、`beauty`、`avatar`、`music`：摄像头自动处理、人声增强、美颜、头像、背景音乐。
 - `subtitles`：语言、样式、位置、大小、底色、章节进度。`chapterProgressEnabled` 控制显示，`chapterProgressPosition` 为 `bottom` / `top`；不改字幕正文或章节内容，正文走 `subtitles apply`，章节走 `chapters apply`。
@@ -34,9 +34,9 @@ oilstudio settings apply <工程> <修改.json> --review
 - `export`：保存 MP4/GIF、分辨率、帧率、质量、视频编码 `videoCodec`（`h264` / `hevc` / `av1`，与旧布尔项 `hevc` 自动同步）、字幕、SRT、GIF 宽度与帧率选项。
 - `watermark`：成片角落的品牌水印。`enabled` 是开关；`style` 为 `translucent`（半透）、`dark`（深色）、`light`（浅色）、`minimal`（极简）；`text` 最多 60 个字符，空字符串表示只显示图标；`showLogo` 控制图标，`italic` 控制斜体；`position` 为 `bottom-right`、`bottom-left`、`top-right`、`top-left`；`scale`、`opacity` 的范围以 schema 为准。用户只说“加水印”时只提交 `{"watermark": {"enabled": true}}`，沿用工程现有的样式和文字；去掉水印提交 `false`。换成自己的图标图片只能在 App 的「画面」检查器里操作，命令行做不到，告诉用户在哪里换。
 
-媒体选项引用已有素材：背景图片须为工程内的相对路径；音乐 `id` 是已有内置曲目 ID 或工程已导入的音乐文件名，头像 `packID` 可通过 `oilstudio avatar list` 查询，同时返回下载状态。导出会下载工程用到的头像并报告进度。可沿用 `get` 返回的引用；不要编造 ID，也不把任意磁盘路径当素材。此接口不导入素材、不读取或修改云端密钥、录制偏好或工程的 AI 自动应用开关。
+媒体选项引用已有素材：背景图片须为工程内的相对路径；音乐 `id` 是已有内置曲目 ID 或工程已导入的音乐文件名，头像 `packID` 可通过 `oilstudio avatar list` 查询，同时返回下载状态。导出会下载工程用到的头像并报告进度。可沿用 `get` 返回的引用；不要编造 ID，也不把任意磁盘路径当素材。此接口不导入素材、不读取或修改云端密钥、录制偏好或全局的 AI 自动应用开关。
 
-提案按分组确认，遵循工程现有直接生效开关；`--review` 强制先确认。`autoApplied: false` 时等待 `proposal status <id> --wait`，不能据此说已修改。若返回 `changed: false`，说明没有差异，无需等待提案。生效后再 `settings get` 回读具体值，确认后才能导出；⌘Z 可撤销。App 未运行时会排队，不直接写工程。
+提案按分组确认，遵循全局的 AI 直接生效偏好；`--review` 强制先确认。`autoApplied: false` 时等待 `proposal status <id> --wait`，不能据此说已修改。若返回 `changed: false`，说明没有差异，无需等待提案。生效后再 `settings get` 回读具体值，确认后才能导出；⌘Z 可撤销。App 未运行时会排队，不直接写工程。
 
 ## 导出
 
